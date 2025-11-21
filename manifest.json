@@ -1,11 +1,17 @@
 {
-"manifest_version": 3,
-"name": "nias spot exporter",
-"description": "استخراج لیست جلسات از اسپات پلیر و خروجی Word/TXT",
-"version": "1.0",
-"permissions": ["activeTab", "scripting"],
-"action": {
-"default_popup": "popup.html",
-"default_title": "nias spot exporter"
-}
+  "manifest_version": 3,
+  "name": "nias spot exporter",
+  "description": "استخراج لیست جلسات از اسپات پلیر و خروجی Word/TXT",
+  "version": "1.0",
+  "action": {
+    "default_title": "nias spot exporter",
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "permissions": ["activeTab", "scripting"]
 }
