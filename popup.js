@@ -1,34 +1,4 @@
 document.getElementById("exportDoc").onclick = async () => {
-chrome.scripting.executeScript({
-target: { tabId: (await chrome.tabs.query({active:true, currentWindow:true}))[0].id },
-func: generateDoc
-});
-};
-
-
-document.getElementById("exportTxt").onclick = async () => {
-chrome.scripting.executeScript({
-target: { tabId: (await chrome.tabs.query({active:true, currentWindow:true}))[0].id },
-func: generateTxt
-});
-};
-
-
-// ───── تابع ساخت DOC (بدون حجم) ─────
-function generateDoc() {
-const items = document.querySelectorAll('x-gi');
-let currentChapter = null;
-let lessonCounter = 1;
-let html = `
-<html xmlns:w="urn:schemas-microsoft-com:office:word">
-<head>
-<meta charset="UTF-8">
-<style>
-body { font-family: 'Tahoma'; direction: rtl; }
-h1 { color: #333; border-bottom: 2px solid #999; padding-bottom: 5px; }
-.lesson { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-.number { font-weight: bold; font-size: 18px; color: #0078D4; }
-.title { font-size: 16px; font-weight: bold; }
 .meta { font-size: 14px; color: #555; margin-top: 5px; }
 </style>
 </head>
@@ -60,4 +30,61 @@ html += `
 <div class="meta">⏱ زمان: ${time}</div>
 </div>
 `;
+}
+});
+
+
+html += "</body></html>";
+
+
+const blob = new Blob(['\ufeff', html], { type: "application/msword" });
+const url = URL.createObjectURL(blob);
+
+
+const a = document.createElement("a");
+a.href = url;
+a.download = "lessons.doc";
+a.click();
+URL.revokeObjectURL(url);
+}
+
+
+// ───── تابع ساخت فایل TXT ─────
+function generateTxt() {
+const items = document.querySelectorAll('x-gi');
+let currentChapter = null;
+let txt = "";
+let counter = 1;
+
+
+items.forEach(item => {
+const isChapter = item.classList.contains('exp');
+const isLesson = item.classList.contains('med');
+
+
+const titleElem = item.querySelector('#name a');
+const timeElem = item.querySelector('#time');
+
+
+const title = titleElem ? titleElem.textContent.trim() : "";
+const time = timeElem ? timeElem.textContent.trim() : "";
+
+
+if (isChapter) {
+currentChapter = title;
+txt += `\n====================\nفصل: ${title}\n--------------------\n`;
+}
+else if (isLesson && currentChapter) {
+txt += `${counter++}. ${title} \n زمان: ${time}\n\n`;
+}
+});
+
+
+const blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = "lessons.txt";
+a.click();
+URL.revokeObjectURL(url);
 }
