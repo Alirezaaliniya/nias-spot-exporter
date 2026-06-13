@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تنظیمات nias spot exporter</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<div class="container">
+
+    <header class="page-header">
+        <img src="icon.png" alt="">
+        <div>
+            <h1>تنظیمات استخراج</h1>
+            <p>خروجی Word/TXT را مطابق سلیقه‌ی خود سفارشی کنید.</p>
+        </div>
+    </header>
+
+    <!-- پیشوند فصل -->
+    <section class="card">
+        <h2>📘 پیشوند فصل</h2>
+        <div class="field">
+            <label class="line">
+                <input type="checkbox" id="showChapterPrefix">
+                <span>نمایش پیشوند پیش از عنوان هر فصل</span>
+            </label>
+        </div>
+        <div class="field indent">
+            <input type="text" id="chapterPrefix" placeholder="مثلاً «فصل: » — برای حذف، خالی بگذارید">
+            <p class="hint">این متن پیش از عنوان هر فصل می‌آید. اگر نمی‌خواهید «فصل» اضافه شود، آن را خالی بگذارید.</p>
+        </div>
+        <div class="preview" id="preview"></div>
+    </section>
+
+    <!-- شماره‌گذاری -->
+    <section class="card">
+        <h2>🔢 شماره‌گذاری دروس</h2>
+        <div class="field">
+            <label class="line">
+                <input type="checkbox" id="numbering">
+                <span>نمایش شماره پیش از هر درس</span>
+            </label>
+        </div>
+        <div class="field indent" id="numberingModeField">
+            <div class="radio-group">
+                <label class="line">
+                    <input type="radio" name="numberingMode" value="continuous">
+                    <span>شماره‌گذاری پیوسته (در کل دوره)</span>
+                </label>
+                <label class="line">
+                    <input type="radio" name="numberingMode" value="perChapter">
+                    <span>در هر فصل از نو شروع شود</span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- زمان -->
+    <section class="card">
+        <h2>⏱ زمان</h2>
+        <div class="field">
+            <label class="line">
+                <input type="checkbox" id="showTime">
+                <span>نمایش زمان هر درس</span>
+            </label>
+        </div>
+        <div class="field indent">
+            <input type="text" id="timeLabel" placeholder="برچسب زمان، مثلاً «زمان: »">
+            <p class="hint">برچسبی که پیش از مدت‌زمان نمایش داده می‌شود.</p>
+        </div>
+    </section>
+
+    <!-- فایل و ایکون -->
+    <section class="card">
+        <h2>📄 فایل و ایکون‌ها</h2>
+        <div class="field">
+            <span>نام فایل خروجی</span>
+            <input type="text" id="filename" placeholder="lessons" style="margin-top:6px">
+            <p class="hint">بدون پسوند؛ پسوند .doc یا .txt به‌صورت خودکار اضافه می‌شود.</p>
+        </div>
+        <div class="field">
+            <label class="line">
+                <input type="checkbox" id="emoji">
+                <span>نمایش ایکون‌ها (📘 ⏱) در خروجی</span>
+            </label>
+        </div>
+    </section>
+
+    <div class="footer-bar">
+        <button class="save" id="save">ذخیره تنظیمات</button>
+        <span class="saved-msg" id="savedMsg">✓ ذخیره شد</span>
+    </div>
+
+</div>
+
+<script src="settings.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
