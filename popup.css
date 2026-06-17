@@ -6,6 +6,7 @@
     --primary: #4f46e5;
     --word: #2563eb;
     --txt: #0f766e;
+    --json: #b45309;
     --radius: 12px;
     --font: "Vazirmatn", "Segoe UI", Tahoma, system-ui, sans-serif;
 }
@@ -81,6 +82,7 @@ body {
 
 #exportDoc { background: var(--word); }
 #exportTxt { background: var(--txt); }
+#exportJson { background: var(--json); }
 
 .status {
     min-height: 18px;

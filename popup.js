@@ -16,6 +16,7 @@ document.getElementById("openOptions").addEventListener("click", () => {
 
 document.getElementById("exportDoc").addEventListener("click", () => runExport("doc"));
 document.getElementById("exportTxt").addEventListener("click", () => runExport("txt"));
+document.getElementById("exportJson").addEventListener("click", () => runExport("json"));
 
 async function runExport(format) {
     const buttons = document.querySelectorAll(".btn");
@@ -63,6 +64,10 @@ function exportFromPage(settings, format) {
     let sawChapter = false;
     let lessonCount = 0;
 
+    // Structured data for the JSON export — raw titles, exact requested shape.
+    const chapters = [];
+    let currentChapter = null;
+
     const escapeHtml = (str) =>
         String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -93,10 +98,13 @@ function exportFromPage(settings, format) {
         if (isChapter) {
             sawChapter = true;
             perChapter = 1;
+            currentChapter = { title, lessons: [] };
+            chapters.push(currentChapter);
             html += `<h1>${chapterIcon}${escapeHtml(prefix + title)}</h1>`;
             txt += `\n====================\n${prefix}${title}\n--------------------\n`;
         } else if (isLesson && sawChapter) {
             lessonCount++;
+            currentChapter.lessons.push({ title });
             const num = settings.numbering ? nextNumber() + ". " : "";
             const metaLine =
                 settings.showTime && time ? `${timeIcon}${settings.timeLabel}${time}` : "";
@@ -118,6 +126,10 @@ function exportFromPage(settings, format) {
     if (format === "doc") {
         blob = new Blob(["﻿", html], { type: "application/msword" });
         ext = "doc";
+    } else if (format === "json") {
+        const json = JSON.stringify({ chapters }, null, 2);
+        blob = new Blob([json], { type: "application/json;charset=utf-8" });
+        ext = "json";
     } else {
         blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
         ext = "txt";
