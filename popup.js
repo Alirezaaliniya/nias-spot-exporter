@@ -17,6 +17,7 @@ document.getElementById("openOptions").addEventListener("click", () => {
 document.getElementById("exportDoc").addEventListener("click", () => runExport("doc"));
 document.getElementById("exportTxt").addEventListener("click", () => runExport("txt"));
 document.getElementById("exportJson").addEventListener("click", () => runExport("json"));
+document.getElementById("exportPdf").addEventListener("click", () => runExport("pdf"));
 
 async function runExport(format) {
     const buttons = document.querySelectorAll(".btn");
@@ -34,7 +35,9 @@ async function runExport(format) {
         });
 
         const res = results?.[0]?.result || { status: "empty" };
-        if (res.status === "done") {
+        if (res.status === "pdf") {
+            setStatus(`✓ ${res.count} مورد — در پنجره‌ی چاپ «ذخیره به‌صورت PDF» را انتخاب کنید`, "ok");
+        } else if (res.status === "done") {
             setStatus(`✓ ${res.count} مورد استخراج شد`, "ok");
         } else if (res.status === "modal") {
             setStatus(`${res.count} دوره پیدا شد — یکی را در صفحه انتخاب کنید`, "ok");
@@ -115,20 +118,13 @@ function exportFromPage(settings, format) {
     }
 
     // ── output builders ────────────────────────────────────────────
-    function buildHtml(data) {
+    // Shared chapter/lesson markup used by both the Word and PDF documents.
+    function bodyHtml(data) {
         const chapterIcon = settings.emoji ? "📘 " : "";
         const timeIcon = settings.emoji ? "⏱ " : "";
         const prefix = settings.showChapterPrefix ? settings.chapterPrefix : "";
         let continuous = 1;
-
-        let html = `<html><head><meta charset="utf-8"><style>
-            body { font-family:Tahoma; direction:rtl; }
-            h1 { background:#f0f0f0; padding:10px; border-radius:8px; }
-            .lesson { margin:10px 0; padding:10px; border:1px solid #ddd; border-radius:8px; }
-            .number { font-weight:bold; font-size:16px; }
-            .title { font-size:15px; margin-top:5px; }
-            .meta { font-size:14px; color:#555; margin-top:5px; }
-        </style></head><body>`;
+        let html = "";
 
         data.chapters.forEach((ch) => {
             let perChapter = 1;
@@ -147,7 +143,77 @@ function exportFromPage(settings, format) {
             });
         });
 
-        return html + "</body></html>";
+        return html;
+    }
+
+    function buildHtml(data) {
+        return `<html><head><meta charset="utf-8"><style>
+            body { font-family:Tahoma; direction:rtl; }
+            h1 { background:#f0f0f0; padding:10px; border-radius:8px; }
+            .lesson { margin:10px 0; padding:10px; border:1px solid #ddd; border-radius:8px; }
+            .number { font-weight:bold; font-size:16px; }
+            .title { font-size:15px; margin-top:5px; }
+            .meta { font-size:14px; color:#555; margin-top:5px; }
+        </style></head><body>${bodyHtml(data)}</body></html>`;
+    }
+
+    // Print-ready document. Persian is rendered by the browser's own engine
+    // (perfect shaping + RTL), then the user saves it via "Save as PDF".
+    function buildPrintHtml(data) {
+        const title = esc(data.title || "lessons");
+        return `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8">
+            <title>${title}</title>
+            <style>
+                @page { size:A4; margin:1.6cm; }
+                * { box-sizing:border-box; }
+                body { font-family:"Vazirmatn",Tahoma,"Segoe UI",system-ui,sans-serif;
+                    direction:rtl; color:#1f2430; margin:0; padding:24px; line-height:1.8; }
+                .doc-title { font-size:22px; font-weight:700; margin:0 0 18px; text-align:center; }
+                h1 { font-size:16px; background:#eef2ff; color:#312e81; padding:9px 12px;
+                    border-radius:8px; margin:18px 0 10px; }
+                .lesson { margin:8px 0; padding:9px 12px; border:1px solid #e5e7eb;
+                    border-radius:8px; page-break-inside:avoid; }
+                .number { font-weight:700; display:inline; color:#4f46e5; }
+                .title { font-size:14px; display:inline; }
+                .meta { font-size:12.5px; color:#6b7280; margin-top:4px; }
+                .hint { background:#fef3c7; color:#92400e; padding:10px 14px; border-radius:8px;
+                    font-size:13px; margin-bottom:16px; text-align:center; }
+                @media print { .hint { display:none; } }
+            </style></head><body>
+            <div class="hint">برای ذخیره‌ی PDF، در پنجره‌ی چاپ مقصد (Destination) را روی «ذخیره به‌صورت PDF / Save as PDF» بگذارید.</div>
+            <div class="doc-title">${title}</div>
+            ${bodyHtml(data)}
+            </body></html>`;
+    }
+
+    // Render the print document in a hidden same-origin iframe and open the print
+    // dialog. Works regardless of the popup closing and avoids popup blocking.
+    function printViaIframe(html) {
+        const old = document.getElementById("nias-print-frame");
+        if (old) old.remove();
+
+        const iframe = document.createElement("iframe");
+        iframe.id = "nias-print-frame";
+        iframe.style.cssText =
+            "position:fixed; right:0; bottom:0; width:0; height:0; border:0; opacity:0;";
+        document.body.appendChild(iframe);
+
+        let printed = false;
+        const go = () => {
+            if (printed) return;
+            printed = true;
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {}
+        };
+
+        iframe.onload = go;
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+        setTimeout(go, 500); // fallback if onload doesn't fire for written docs
     }
 
     function buildTxt(data) {
@@ -191,6 +257,12 @@ function exportFromPage(settings, format) {
     }
 
     function download(data) {
+        // PDF is rendered via a hidden iframe + the browser's print dialog.
+        if (format === "pdf") {
+            printViaIframe(buildPrintHtml(data));
+            return;
+        }
+
         const base = sanitize(data.title) || (settings.filename || "lessons");
         let blob, ext;
         if (format === "doc") {
@@ -280,6 +352,7 @@ function exportFromPage(settings, format) {
     const root = courses[0] || document.body;
     const data = collectCourse(root);
     if (!data.lessonCount) return { status: "empty" };
+
     download(data);
-    return { status: "done", count: data.lessonCount };
+    return { status: format === "pdf" ? "pdf" : "done", count: data.lessonCount };
 }
