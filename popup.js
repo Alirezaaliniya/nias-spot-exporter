@@ -10,6 +10,23 @@ function setStatus(msg, kind = "") {
     statusEl.className = "status" + (kind ? " " + kind : "");
 }
 
+// Pages where chrome.scripting cannot run (browser internals, etc.).
+function isRestrictedTabUrl(url) {
+    if (!url) return true;
+    return /^(chrome|chrome-extension|edge|about|devtools|view-source|brave|opera|vivaldi):/i.test(
+        url
+    );
+}
+
+// Soft hostname hint — Spot Player web apps typically live on *spotplayer* hosts.
+function looksLikeSpotPlayerHost(url) {
+    try {
+        return /spotplayer/i.test(new URL(url).hostname);
+    } catch {
+        return false;
+    }
+}
+
 document.getElementById("openOptions").addEventListener("click", () => {
     chrome.runtime.openOptionsPage();
 });
@@ -28,6 +45,11 @@ async function runExport(format) {
         const settings = await loadSettings();
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
+        if (!tab?.id || isRestrictedTabUrl(tab.url)) {
+            setStatus("این صفحه قابل استخراج نیست", "err");
+            return;
+        }
+
         const results = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: exportFromPage,
@@ -41,11 +63,20 @@ async function runExport(format) {
             setStatus(`✓ ${res.count} مورد استخراج شد`, "ok");
         } else if (res.status === "modal") {
             setStatus(`${res.count} دوره پیدا شد — یکی را در صفحه انتخاب کنید`, "ok");
+        } else if (res.status === "unsupported") {
+            // Prefer hostname hint when DOM markers are missing on a non-Spot host.
+            setStatus(
+                looksLikeSpotPlayerHost(tab.url)
+                    ? "لیست جلسات پیدا نشد؛ مطمئن شوید دوره باز است"
+                    : "لطفاً به صفحه اسپات‌پلیر بروید",
+                "err"
+            );
         } else {
-            setStatus("موردی یافت نشد — مطمئن شوید در صفحه‌ی اسپات پلیر هستید", "err");
+            // Spot Player DOM present, but no exportable lessons.
+            setStatus("لیست جلسات پیدا نشد؛ مطمئن شوید دوره باز است", "err");
         }
     } catch (e) {
-        setStatus("خطا در استخراج — صفحه‌ی فعال پشتیبانی نمی‌شود", "err");
+        setStatus("این صفحه قابل استخراج نیست", "err");
     } finally {
         buttons.forEach(b => (b.disabled = false));
     }
@@ -56,9 +87,11 @@ async function runExport(format) {
 // every value comes from the `settings` / `format` arguments.
 //
 // Returns one of:
-//   { status: "done", count }   downloaded a single course
-//   { status: "modal", count }  showed the course picker; download happens on click
-//   { status: "empty" }         nothing found on the page
+//   { status: "done", count }          downloaded a single course
+//   { status: "pdf", count }           opened the print dialog for PDF
+//   { status: "modal", count }         showed the course picker; download happens on click
+//   { status: "unsupported" }          page has no Spot Player DOM markers
+//   { status: "empty" }                Spot Player page, but nothing exportable
 // ──────────────────────────────────────────────
 function exportFromPage(settings, format) {
     const MODAL_ID = "nias-exporter-modal";
@@ -305,8 +338,10 @@ function exportFromPage(settings, format) {
                     margin:6px 0; border:1px solid #e5e7eb; border-radius:10px; background:#fff;
                     cursor:pointer; font-size:14px; color:#1f2430; font-family:inherit;
                     transition:background .15s,border-color .15s; }
-                #${MODAL_ID} .item:hover { background:#eef2ff; border-color:#4f46e5; }
+                #${MODAL_ID} .item:hover:not(:disabled) { background:#eef2ff; border-color:#4f46e5; }
+                #${MODAL_ID} .item:disabled { opacity:.55; cursor:not-allowed; background:#f9fafb; }
                 #${MODAL_ID} .item .count { color:#6b7280; font-size:12px; white-space:nowrap; }
+                #${MODAL_ID} .item .count.empty { color:#b45309; }
                 #${MODAL_ID} .foot { padding:12px 20px; border-top:1px solid #eee; text-align:left; }
                 #${MODAL_ID} .close { border:0; background:#f3f4f6; color:#374151;
                     padding:8px 18px; border-radius:8px; cursor:pointer; font-family:inherit; font-size:13px; }
@@ -321,13 +356,21 @@ function exportFromPage(settings, format) {
         const list = overlay.querySelector(".list");
         courses.forEach((courseEl, i) => {
             const data = collectCourse(courseEl);
+            const hasLessons = data.lessonCount > 0;
             const btn = document.createElement("button");
             btn.className = "item";
+            btn.disabled = !hasLessons;
+            btn.title = hasLessons
+                ? ""
+                : "این دوره جلسه‌ای برای استخراج ندارد";
             btn.innerHTML =
                 `<span>${esc(data.title || "دوره " + (i + 1))}</span>` +
-                `<span class="count">${data.lessonCount} مورد</span>`;
+                (hasLessons
+                    ? `<span class="count">${data.lessonCount} مورد</span>`
+                    : `<span class="count empty">بدون جلسه</span>`);
             btn.addEventListener("click", () => {
-                if (data.lessonCount) download(data);
+                if (!hasLessons) return;
+                download(data);
                 overlay.remove();
             });
             list.appendChild(btn);
@@ -341,6 +384,10 @@ function exportFromPage(settings, format) {
     }
 
     // ── entry point ─────────────────────────────────────────────────
+    // Spot Player uses custom elements (x-gi / x-gr). Absence ≈ wrong site.
+    const hasSpotDom = !!document.querySelector("x-gi, x-gr");
+    if (!hasSpotDom) return { status: "unsupported" };
+
     const courses = Array.from(document.querySelectorAll("x-gi.course"));
 
     if (courses.length > 1) {
