@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style id="a"></style><style id="b"></style>
+<style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eceef4; font-family: "Vazirmatn", Tahoma, sans-serif; height: 600px; overflow: hidden;
+        background-image: radial-gradient(#c9cdd8 1px, transparent 1px); background-size: 18px 18px; }
+    .wrap { display: flex; gap: 28px; justify-content: center; padding: 30px 30px 0; }
+    .card { position: relative; }
+    .paper { width: 340px; height: 560px; overflow: hidden; padding: 30px 30px; border-radius: 6px;
+        box-shadow: 0 12px 40px rgba(15,23,42,.16); }
+    .tag { position: absolute; top: -12px; left: 16px; color: #fff; font: 700 13px "Pinar VF", Tahoma, sans-serif; padding: 4px 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.15); direction: ltr; }
+    .code { background: #0f172a; color: #e2e8f0; font: 12.5px/1.7 Consolas, "Vazirmatn", Tahoma, sans-serif; direction: ltr; text-align: left; white-space: pre; padding: 26px 22px; }
+    .code .k { color: #93c5fd; } .code .s { color: #86efac; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card"><span class="tag" style="background:#2563eb">Word</span><div class="paper doc-a" id="pa"></div></div>
+    <div class="card"><span class="tag" style="background:#dc2626">PDF</span><div class="paper doc-b" id="pb"></div></div>
+    <div class="card"><span class="tag" style="background:#b45309">JSON</span><div class="paper code" id="pj"></div></div>
+</div>
+<script>window.chrome = { storage: { sync: { get: async (d) => d } } };</script>
+<script src="../../src/shared/settings.js"></script>
+<script src="../../src/shared/render.js"></script>
+<script>
+    const L = (title, time = "") => ({ title, time });
+    const doc = makeDoc({ title: "دوره پیشرفته طراحی رابط کاربری", chapters: [
+        { title: "شروع دوره", lessons: [L("معرفی دوره و مسیر یادگیری", "06:12"), L("نصب و راه‌اندازی ابزارها", "14:40")] },
+        { title: "اصول طراحی رابط کاربری", lessons: [L("سلسله‌مراتب بصری", "18:05"), L("رنگ و کنتراست", "21:33"), L("تایپوگرافی فارسی", "16:47")] },
+        { title: "کار حرفه‌ای با فیگما", lessons: [L("کامپوننت‌ها و واریانت‌ها", "24:10"), L("اتولی‌اوت پیشرفته", "19:55")] },
+    ]});
+    const sA = { ...DEFAULT_SETTINGS, baseSize: 12, chapterSize: 13, titleSize: 16, spacing: 5 };
+    const sB = { ...DEFAULT_SETTINGS, ...THEMES.rose, lessonStyle: "compact", baseSize: 12, chapterSize: 13, titleSize: 16, spacing: 6, radius: 12, numberingMode: "perChapter" };
+    document.getElementById("a").textContent = docCss(sA, ".doc-a");
+    document.getElementById("b").textContent = docCss(sB, ".doc-b");
+    document.getElementById("pa").innerHTML = docBodyHtml(doc, sA);
+    document.getElementById("pb").innerHTML = docBodyHtml(doc, sB);
+    document.getElementById("pj").innerHTML = esc(buildJson(doc)).replace(/(&quot;\w+&quot;):/g, '<span class="k">$1</span>:').replace(/: (&quot;[^\n]*&quot;)/g, ': <span class="s">$1</span>');
+</script>
+</body>
+</html>

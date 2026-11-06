@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 1280px; height: 800px; overflow: hidden; }
+    body {
+        font-family: "Pinar VF", "Pinar", Tahoma, sans-serif; color: #fff; direction: rtl;
+        background: radial-gradient(1200px 600px at 85% -10%, #7c3aed 0%, transparent 60%),
+                    radial-gradient(900px 600px at 0% 110%, #2563eb 0%, transparent 55%),
+                    linear-gradient(135deg, #312e81, #4f46e5);
+        position: relative;
+    }
+    .head { position: absolute; top: 34px; right: 0; left: 0; text-align: center; }
+    .head h1 { margin: 0; font-size: 42px; font-weight: 800; line-height: 1.35; }
+    .head p { margin: 2px 0 0; font-size: 21px; line-height: 1.5; opacity: .88; }
+    .brand { position: absolute; top: 22px; left: 28px; display: flex; align-items: center; gap: 8px; font: 700 14px "Pinar VF", Tahoma, sans-serif; opacity: .9; direction: ltr; }
+    .brand img { width: 26px; height: 26px; border-radius: 7px; background: #fff; padding: 2px; }
+    .window {
+        position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+        background: #fff; border-radius: 16px 16px 0 0; overflow: hidden;
+        box-shadow: 0 30px 80px rgba(15, 10, 60, .55), 0 0 0 1px rgba(255,255,255,.25);
+    }
+    .bar { height: 30px; background: #eef0f5; display: flex; align-items: center; gap: 7px; padding: 0 14px; direction: ltr; }
+    .bar i { width: 11px; height: 11px; border-radius: 50%; background: #f87171; }
+    .bar i:nth-child(2) { background: #fbbf24; } .bar i:nth-child(3) { background: #34d399; }
+    iframe { border: 0; display: block; transform-origin: top left; background: #fff; }
+    .clip { overflow: hidden; direction: ltr; }
+    .row { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); display: flex; gap: 46px; align-items: flex-end; }
+    .popup { border-radius: 16px; overflow: hidden; box-shadow: 0 30px 70px rgba(15, 10, 60, .55); background: #fff; }
+    .cap { text-align: center; margin-top: 12px; font-size: 15px; opacity: .85; }
+</style>
+</head>
+<body>
+<div class="brand"><img src="../../icons/icon48.png" alt="">nias spot exporter</div>
+<div class="head"><h1 id="h"></h1><p id="p"></p></div>
+<div id="stage"></div>
+<script src="frame.js"></script>
+</body>
+</html>
