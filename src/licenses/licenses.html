@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لایسنس‌ها — nias spot exporter</title>
+<link rel="icon" href="../../icons/icon32.png">
+<link rel="stylesheet" href="licenses.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <img src="../../icons/icon48.png" alt="">
+        <h1>لایسنس‌ها</h1>
+        <span class="pill" id="countPill">0</span>
+    </div>
+    <div class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="search" placeholder="جستجو در نام، تگ، دوره، شناسه…">
+    </div>
+    <div class="exports">
+        <button class="ex xlsx" data-format="xlsx">Excel</button>
+        <button class="ex word" data-format="doc">Word</button>
+        <button class="ex pdf" data-format="pdf">PDF</button>
+        <button class="ex json" data-format="json">JSON</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="panel">
+        <section>
+            <h3>ستون‌ها</h3>
+            <p class="hint">تیک = نمایش در جدول و خروجی. با کشیدن <b>⋮⋮</b> ترتیب را عوض کنید.</p>
+            <ul class="cols" id="cols"></ul>
+            <button class="ghost" id="resetCols">بازگردانی ستون‌های پیش‌فرض</button>
+        </section>
+        <section>
+            <h3>اطلاعات استخراج</h3>
+            <dl class="meta" id="meta"></dl>
+            <p class="hint">برای به‌روزرسانی، دوباره از دکمه‌ی افزونه در صفحه‌ی لایسنس‌های پنل استفاده کنید.</p>
+        </section>
+    </aside>
+
+    <main class="main">
+        <div class="empty hidden" id="empty">هنوز لایسنسی استخراج نشده است. در پنل اسپات پلیر به صفحه‌ی «لایسنس‌ها» بروید و روی افزونه بزنید.</div>
+        <div class="table-wrap" id="tableWrap">
+            <table class="grid" id="grid"><thead></thead><tbody></tbody></table>
+        </div>
+        <div class="foot" id="foot"></div>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="print-area" id="printArea"></div>
+
+<script src="../shared/settings.js"></script>
+<script src="../shared/render.js"></script>
+<script src="../shared/licenses.js"></script>
+<script src="licenses.js"></script>
+</body>
+</html>

@@ -2,62 +2,110 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
+<title>nias spot exporter</title>
 <link rel="stylesheet" href="popup.css">
 </head>
 <body>
 
-<div class="header">
-    <img src="icon.png" alt="">
-    <span class="title">nias spot exporter</span>
-    <button class="gear" id="openOptions" title="تنظیمات">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
+<header class="header">
+    <img src="../../icons/icon48.png" alt="">
+    <div class="brand">
+        <span class="title">nias spot exporter</span>
+        <span class="sub">استخراج و طراحی فهرست جلسات</span>
+    </div>
+    <button class="icon-btn" id="openEditor" title="بوم طراحی و تنظیمات">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
     </button>
+</header>
+
+<section id="viewNotPanel" class="view hidden">
+    <div class="empty">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        <p>این افزونه روی <b>پنل اسپات پلیر</b> کار می‌کند.<br>صفحه‌ی «دوره‌ها» را باز کنید و دوباره روی افزونه بزنید.</p>
+        <button class="btn primary" id="goPanel">باز کردن پنل دوره‌ها</button>
+    </div>
+</section>
+
+<nav class="modes hidden" id="modes" role="tablist">
+    <button data-mode="courses">دوره‌ها</button>
+    <button data-mode="licenses">لایسنس‌ها</button>
+</nav>
+
+<section id="viewLicenses" class="view hidden">
+    <div id="licGo" class="empty hidden">
+        <p>برای خروجی لایسنس‌ها، صفحه‌ی <b>لایسنس‌ها</b> در پنل باید باز باشد.</p>
+        <button class="btn primary" id="goLicenses">رفتن به صفحه‌ی لایسنس‌ها</button>
+    </div>
+    <div id="licReady" class="hidden">
+        <div class="lic-stats">
+            <div><b id="licTotal">0</b><span>کل لایسنس‌ها</span></div>
+            <div><b id="licOnPage">0</b><span>در این صفحه</span></div>
+        </div>
+        <div class="seg" id="licScope">
+            <button data-scope="page">همین صفحه</button>
+            <button data-scope="all">همه‌ی صفحات</button>
+        </div>
+        <p class="note">فیلترهای فعال پنل (جستجو، دوره، تاریخ، تگ) روی خروجی هم اعمال می‌شود.</p>
+
+        <button class="btn primary big" id="licOpen">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+            مشاهده، تنظیم ستون‌ها و خروجی
+        </button>
+        <div class="quick-label">خروجی سریع با آخرین ستون‌های ذخیره‌شده</div>
+        <div class="quick">
+            <button class="qbtn xlsx" data-lformat="xlsx">Excel</button>
+            <button class="qbtn word" data-lformat="doc">Word</button>
+            <button class="qbtn pdf" data-lformat="pdf">PDF</button>
+            <button class="qbtn json" data-lformat="json">JSON</button>
+        </div>
+    </div>
+</section>
+
+<section id="viewLoading" class="view">
+    <div class="loader"><span></span>در حال خواندن صفحه…</div>
+</section>
+
+<section id="viewCourses" class="view hidden">
+    <div class="list-head">
+        <span>دوره را انتخاب کنید</span>
+        <span class="count" id="courseCount"></span>
+    </div>
+    <input type="search" id="filter" class="filter hidden" placeholder="جستجوی دوره…">
+    <div class="courses" id="courses" role="radiogroup"></div>
+
+    <button class="btn primary big" id="toCanvas" disabled>
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        ویرایش و طراحی در بوم
+    </button>
+
+    <div class="quick-label">خروجی سریع با آخرین طرح ذخیره‌شده</div>
+    <div class="quick">
+        <button class="qbtn word" data-format="doc" disabled>Word</button>
+        <button class="qbtn pdf" data-format="pdf" disabled>PDF</button>
+        <button class="qbtn txt" data-format="txt" disabled>TXT</button>
+        <button class="qbtn json" data-format="json" disabled>JSON</button>
+    </div>
+</section>
+
+<div class="progress hidden" id="progress" role="status" aria-live="polite">
+    <div class="pg-card">
+        <span class="spinner"></span>
+        <div class="pg-title" id="pgTitle">در حال خواندن دوره…</div>
+        <div class="pg-counts">
+            <div><b id="pgSections">0</b><span id="pgUnitA">بخش</span></div>
+            <div><b id="pgLessons">0</b><span id="pgUnitB">جلسه پیدا شد</span></div>
+        </div>
+        <div class="pg-bar"><i id="pgBar"></i></div>
+        <div class="pg-hint">پنجره را نبندید…</div>
+    </div>
 </div>
 
-<button class="btn" id="exportDoc">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-    </svg>
-    خروجی Word
-</button>
+<button class="link hidden" id="resume">ادامه‌ی ویرایش آخرین سند ←</button>
+<div class="status" id="status" role="status"></div>
 
-<button class="btn" id="exportTxt">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <line x1="8" y1="13" x2="16" y2="13"></line>
-        <line x1="8" y1="17" x2="16" y2="17"></line>
-    </svg>
-    خروجی TXT
-</button>
-
-<button class="btn" id="exportJson">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <path d="M10 13s-1 0-1 1 1 2 1 3-1 1-1 1"></path>
-        <path d="M14 13s1 0 1 1-1 2-1 3 1 1 1 1"></path>
-    </svg>
-    اکسپورت گرفتن JSON
-</button>
-
-<button class="btn" id="exportPdf">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <path d="M9 15h1.5a1.5 1.5 0 0 0 0-3H9v6"></path>
-        <path d="M14 18v-6h1a2 2 0 0 1 0 6z"></path>
-    </svg>
-    خروجی PDF
-</button>
-
-<div class="status" id="status"></div>
-
-<script src="settings.js"></script>
+<script src="../shared/settings.js"></script>
+<script src="../shared/render.js"></script>
+<script src="../shared/licenses.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

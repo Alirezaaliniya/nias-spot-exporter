@@ -1,18 +1,32 @@
 {
   "manifest_version": 3,
   "name": "nias spot exporter",
-  "description": "استخراج لیست جلسات از اسپات پلیر و خروجی Word/TXT",
-  "version": "1.0",
+  "short_name": "nias exporter",
+  "description": "فهرست جلسات دوره‌ها و لایسنس‌های پنل اسپات پلیر را استخراج، ویرایش و به Excel، Word، PDF، TXT و JSON خروجی بگیرید.",
+  "version": "2.0.0",
+  "minimum_chrome_version": "105",
   "action": {
     "default_title": "nias spot exporter",
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-  "options_page": "options.html",
+  "options_ui": {
+    "page": "src/editor/editor.html",
+    "open_in_tab": true
+  },
   "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
-  "permissions": ["activeTab", "scripting", "storage"]
+  "permissions": ["activeTab", "scripting", "storage"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 }

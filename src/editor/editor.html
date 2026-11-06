@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بوم طراحی — nias spot exporter</title>
+<link rel="icon" href="../../icons/icon32.png">
+<link rel="stylesheet" href="editor.css">
+<style id="docStyle"></style>
+</head>
+<body>
+
+<!-- ───────── top bar ───────── -->
+<header class="topbar">
+    <div class="tb-brand">
+        <img src="../../icons/icon48.png" alt="">
+        <input id="docTitle" class="doc-title" placeholder="عنوان سند" spellcheck="false">
+        <span class="badge hidden" id="sampleBadge">سند نمونه</span>
+    </div>
+
+    <div class="tb-group">
+        <button class="tb-btn" id="undo" title="واگرد (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+        <button class="tb-btn" id="redo" title="ازنو (Ctrl+Y)"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+        <span class="tb-sep"></span>
+        <button class="tb-btn" id="zoomOut" title="کوچک‌نمایی"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+        <button class="tb-zoom" id="zoomReset" title="۱۰۰٪">100%</button>
+        <button class="tb-btn" id="zoomIn" title="بزرگ‌نمایی"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+
+    <div class="tb-group exports">
+        <span class="saved" id="savedState">ذخیره شد</span>
+        <button class="ex word" data-format="doc">Word</button>
+        <button class="ex pdf" data-format="pdf">PDF</button>
+        <button class="ex txt" data-format="txt">TXT</button>
+        <button class="ex json" data-format="json">JSON</button>
+    </div>
+</header>
+
+<div class="layout">
+
+    <!-- ───────── side panel ───────── -->
+    <aside class="panel">
+        <nav class="tabs" role="tablist">
+            <button class="tab active" data-tab="style">طراحی</button>
+            <button class="tab" data-tab="content">محتوا</button>
+            <button class="tab" data-tab="tools">ابزار</button>
+        </nav>
+
+        <!-- طراحی -->
+        <div class="pane" data-pane="style">
+            <div class="group">
+                <h3>طرح رنگ</h3>
+                <div class="themes" id="themes"></div>
+            </div>
+
+            <div class="group">
+                <h3>رنگ‌ها</h3>
+                <div class="colors">
+                    <label><input type="color" data-key="accent"><span>رنگ اصلی</span></label>
+                    <label><input type="color" data-key="chapterBg"><span>زمینه فصل</span></label>
+                    <label><input type="color" data-key="chapterColor"><span>متن فصل</span></label>
+                    <label><input type="color" data-key="textColor"><span>متن</span></label>
+                    <label><input type="color" data-key="mutedColor"><span>متن فرعی</span></label>
+                    <label><input type="color" data-key="borderColor"><span>حاشیه</span></label>
+                    <label><input type="color" data-key="pageBg"><span>زمینه صفحه</span></label>
+                </div>
+            </div>
+
+            <div class="group">
+                <h3>تایپوگرافی</h3>
+                <label class="row">
+                    <span>فونت</span>
+                    <select data-key="fontFamily" id="fontSelect"></select>
+                </label>
+                <label class="range"><span>اندازه متن</span><input type="range" min="10" max="20" step="0.5" data-key="baseSize"><output></output></label>
+                <label class="range"><span>اندازه فصل</span><input type="range" min="12" max="30" step="1" data-key="chapterSize"><output></output></label>
+                <label class="range"><span>اندازه عنوان</span><input type="range" min="14" max="40" step="1" data-key="titleSize"><output></output></label>
+            </div>
+
+            <div class="group">
+                <h3>چیدمان جلسات</h3>
+                <div class="segmented" data-key="lessonStyle">
+                    <button data-value="card">کارتی</button>
+                    <button data-value="list">فهرستی</button>
+                    <button data-value="compact">فشرده</button>
+                </div>
+                <label class="range"><span>گردی گوشه‌ها</span><input type="range" min="0" max="20" step="1" data-key="radius"><output></output></label>
+                <label class="range"><span>فاصله‌ها</span><input type="range" min="2" max="20" step="1" data-key="spacing"><output></output></label>
+            </div>
+
+            <button class="ghost" id="resetStyle">بازگردانی طراحی پیش‌فرض</button>
+        </div>
+
+        <!-- محتوا -->
+        <div class="pane hidden" data-pane="content">
+            <div class="group">
+                <label class="check"><input type="checkbox" data-key="showDocTitle"><span>نمایش عنوان سند</span></label>
+                <label class="check"><input type="checkbox" data-key="emoji"><span>نمایش ایکون‌ها (📘 ⏱)</span></label>
+            </div>
+            <div class="group">
+                <h3>پیشوند فصل</h3>
+                <label class="check"><input type="checkbox" data-key="showChapterPrefix"><span>نمایش پیشوند پیش از عنوان فصل</span></label>
+                <input type="text" data-key="chapterPrefix" data-depends="showChapterPrefix" placeholder="مثلاً «فصل: »">
+            </div>
+            <div class="group">
+                <h3>شماره‌گذاری</h3>
+                <label class="check"><input type="checkbox" data-key="numbering"><span>شماره پیش از هر جلسه</span></label>
+                <div class="segmented" data-key="numberingMode" data-depends="numbering">
+                    <button data-value="continuous">پیوسته</button>
+                    <button data-value="perChapter">از نو در هر فصل</button>
+                </div>
+            </div>
+            <div class="group">
+                <h3>زمان</h3>
+                <label class="check"><input type="checkbox" data-key="showTime"><span>نمایش مدت هر جلسه</span></label>
+                <input type="text" data-key="timeLabel" data-depends="showTime" placeholder="برچسب، مثلاً «زمان: »">
+            </div>
+            <div class="group">
+                <h3>نام فایل خروجی</h3>
+                <input type="text" data-key="filename" placeholder="خالی = عنوان سند">
+                <p class="hint">بدون پسوند؛ پسوند هر فرمت خودکار اضافه می‌شود.</p>
+            </div>
+        </div>
+
+        <!-- ابزار -->
+        <div class="pane hidden" data-pane="tools">
+            <div class="stats" id="stats"></div>
+            <div class="group">
+                <h3>ساختار</h3>
+                <button class="tool" id="addChapter">+ افزودن فصل جدید</button>
+                <button class="tool" id="collapseAll">جمع کردن همه‌ی فصل‌ها</button>
+                <button class="tool" id="expandAll">باز کردن همه‌ی فصل‌ها</button>
+            </div>
+            <div class="group">
+                <h3>پاک‌سازی سریع</h3>
+                <button class="tool" data-clean="text">حذف همه‌ی محتواهای «متن»</button>
+                <button class="tool" data-clean="exam">حذف همه‌ی «آزمون»‌ها</button>
+                <button class="tool" data-clean="empty">حذف فصل‌های خالی</button>
+                <button class="tool" data-clean="unhide">نمایش همه‌ی موارد مخفی</button>
+            </div>
+            <div class="group">
+                <h3>سند</h3>
+                <button class="tool danger" id="resetDoc">بازگردانی به نسخه‌ی استخراج‌شده</button>
+            </div>
+            <div class="group help">
+                <h3>راهنما</h3>
+                <ul>
+                    <li>با کشیدن دستگیره <b>⋮⋮</b> فصل‌ها و جلسات را جابه‌جا کنید (بین فصل‌ها هم).</li>
+                    <li>دوبار کلیک روی عنوان یا زمان = ویرایش.</li>
+                    <li><b>Ctrl</b>/<b>Shift</b> + کلیک = انتخاب چندتایی.</li>
+                    <li><b>Delete</b> حذف، <b>Ctrl+Z</b> واگرد، <b>Ctrl+چرخ موس</b> زوم.</li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ───────── canvas ───────── -->
+    <main class="canvas" id="canvas">
+        <div class="paper nias-doc" id="paper"></div>
+
+        <div class="selbar hidden" id="selbar">
+            <span id="selCount"></span>
+            <select id="moveTo"><option value="">انتقال به فصل…</option></select>
+            <button data-sel="group">فصل جدید از انتخاب</button>
+            <button data-sel="toggle">مخفی / نمایش</button>
+            <button data-sel="delete" class="danger">حذف</button>
+            <button data-sel="clear" class="x" title="لغو انتخاب">✕</button>
+        </div>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- filled right before printing (PDF) -->
+<div class="nias-doc print-area" id="printArea"></div>
+
+<script src="../shared/settings.js"></script>
+<script src="../shared/render.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>
